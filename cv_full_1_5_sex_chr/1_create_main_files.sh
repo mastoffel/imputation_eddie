@@ -1,12 +1,12 @@
 #!/bin/sh
 # Grid Engine options (lines prefixed with #$)
-#$ -N run_create_main_files_1_5.R
+#$ -N cv_1_5_full_sex_chr_run_create_main_files.R
 #$ -cwd
-#$ -l h_rt=30:00:00
-#$ -l h_vmem=8G
+#$ -l h_rt=10:00:00
+#$ -l h_vmem=10G
 #$ -M martin.adam.stoffel@gmail.com
 #$ -m beas
-#$ -pe sharedmem 4
+#$ -pe sharedmem 2
 #$ -o o_files/
 #$ -e e_files/
 
@@ -15,9 +15,9 @@
 
 module load R/3.5.3
 
-for i in {1..26}
+for i in 27
 do
-   Rscript create_main_files.R $i
+   Rscript create_main_files_sexchr.R $i
 done
 
 
