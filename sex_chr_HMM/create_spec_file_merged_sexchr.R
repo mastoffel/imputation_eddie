@@ -4,7 +4,7 @@ create_spec_file <- function(output_path, num_SNPs) {
     
     # specify first 5 haplotype lengths as between 10 and 30 percent of chromosome
     # specify second 5 haplotype lengths in between the first five with some +- (recommended by John)
-    first_five <- round(seq(from = 0.1, to = 0.50, by = 0.1) * num_SNPs, digits = 0)
+    first_five <- round(seq(from = 0.05, to = 0.30, by = 0.06) * num_SNPs, digits = 0)
     second_five <- round(first_five + (first_five[2] - first_five[1])/2 + runif(5, -0.05*first_five[1], 0.05*first_five[1]), 0)
     
     # specify core and tail around a 100 longer than core, as recommended by Andrew
@@ -38,8 +38,8 @@ create_spec_file <- function(output_path, num_SNPs) {
             "ConservativeHaplotypeLibraryUse     ,No",
             "ModelRecomb                         ,No",
             "= BOX 7: Hidden Markov Model ========================================================",
-            "HMMOption                           ,No",
-            "TemplateHaplotypes                  ,20",    # if insufficient accuracy increase to 50 or 100 but much slower
+            "HMMOption                           ,Only",
+            "TemplateHaplotypes                  ,50",    # if insufficient accuracy increase to 50 or 100 but much slower
             "BurnInRounds                        ,5",
             "Rounds                              ,20",
             #"Seed                                ,-123456789",

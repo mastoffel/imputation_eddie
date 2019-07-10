@@ -1,6 +1,6 @@
 #!/bin/sh
 # Grid Engine options (lines prefixed with #$)
-#$ -N cv_sexchr_masked_run_prep_on_scratch
+#$ -N par_masked_run_prep_on_scratch
 #$ -cwd
 #$ -l h_rt=00:20:00
 #$ -l h_vmem=3G

@@ -4,12 +4,12 @@ create_spec_file <- function(output_path, num_SNPs) {
     
     # specify first 5 haplotype lengths as between 10 and 30 percent of chromosome
     # specify second 5 haplotype lengths in between the first five with some +- (recommended by John)
-    first_five <- round(seq(from = 0.1, to = 0.50, by = 0.1) * num_SNPs, digits = 0)
+    first_five <- round(seq(from = 0.01, to = 0.05, by = 0.01) * num_SNPs, digits = 0)
     second_five <- round(first_five + (first_five[2] - first_five[1])/2 + runif(5, -0.05*first_five[1], 0.05*first_five[1]), 0)
     
     # specify core and tail around a 100 longer than core, as recommended by Andrew
     core_lengths <- paste(c(first_five, second_five), collapse = ",")
-    core_tail_lengths <- paste(c(first_five, second_five) + 100, collapse = ",")
+    core_tail_lengths <- paste(c(first_five, second_five) + 50, collapse = ",")
     
     writeLines(
         con = paste0(output_path, "AlphaImputeSpec.txt"),
@@ -19,7 +19,7 @@ create_spec_file <- function(output_path, num_SNPs) {
             "GenotypeFile                        ,Genotypes.txt",
             #"TrueGenotypeFile                    ,TrueGenotypes.txt"
             "= BOX 2: Sex Chromosome =============================================================",
-            "SexChrom                            ,Yes, sex_chr_impute_table.txt, Male", # Yes, add_file, Male 
+            "SexChrom                            ,No",
             "= BOX 3: SNPs =======================================================================",
             paste0("NumberSnp                     ,",num_SNPs),
             "= BOX 4: Filtering ==================================================================",
@@ -36,7 +36,7 @@ create_spec_file <- function(output_path, num_SNPs) {
             "= BOX 6: Imputation =================================================================",
             "InternalIterations                  ,5",   
             "ConservativeHaplotypeLibraryUse     ,No",
-            "ModelRecomb                         ,No",
+            "ModelRecomb                         ,Yes",
             "= BOX 7: Hidden Markov Model ========================================================",
             "HMMOption                           ,No",
             "TemplateHaplotypes                  ,20",    # if insufficient accuracy increase to 50 or 100 but much slower

@@ -1,12 +1,12 @@
 #!/bin/sh
 # Grid Engine options (lines prefixed with #$)
-#$ -N cv_sexchr_masked_run_prep_on_scratch
+#$ -N cv_1_5_full_sex_chr_run_create_main_files.R
 #$ -cwd
-#$ -l h_rt=00:20:00
-#$ -l h_vmem=3G
+#$ -l h_rt=10:00:00
+#$ -l h_vmem=10G
 #$ -M martin.adam.stoffel@gmail.com
 #$ -m beas
-#$ -pe sharedmem 4
+#$ -pe sharedmem 2
 #$ -o o_files/
 #$ -e e_files/
 
@@ -17,5 +17,7 @@ module load R/3.5.3
 
 for i in 27
 do
-   Rscript prep_masked_cv_runs_sexchr.R $i
+   Rscript create_main_files_sexchr.R $i
 done
+
+

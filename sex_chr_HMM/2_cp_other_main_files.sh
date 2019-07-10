@@ -7,7 +7,7 @@
 #$ -o o_files/
 #$ -e e_files/
 
-outpath=cv_full_1_5_sex_chr
+outpath=sex_chr_HMM
 
 for i in 27
 do
