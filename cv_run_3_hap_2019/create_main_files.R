@@ -9,7 +9,7 @@
 library(snpStats)
 library(tidyverse)
 library(data.table)
-source("create_spec_file_merged_sexchr.R")
+source("create_spec_file_merged.R")
 #library(gdata)
 #library("WGCNA")
 # browseVignettes("snpStats")
@@ -17,20 +17,19 @@ source("create_spec_file_merged_sexchr.R")
 # capture command line arguments
 # either 1-27 for the chromosomes or all_chr for full data
 
-args <- commandArgs(trailingOnly=TRUE)
+chr_inp  <- commandArgs(trailingOnly=TRUE)
 
 if (purrr::is_empty(args)) {
     stop("Provide a chromosome number as argument")
     chr_num <- NULL
-} else if (args[[1]] == "all_chr") { # command for full dataset
+} else if (chr_inp[[1]] == "all_chr") { # command for full dataset
     stop("Only accepts chromosome numbers from 1-26 at the moment")
     chr_num <- NULL
-} else if ((as.numeric(args[[1]]) < 28) & (as.numeric(args[[1]]) >= 1)) { # do not allow the sex chromosome for now
-    chr_num <- as.numeric(args[[1]])
+} else if ((as.numeric(chr_inp[[1]]) < 27) & (as.numeric(chr_inp[[1]]) >= 1)) { # do not allow the sex chromosome for now
+    chr_num <- as.numeric(chr_inp[[1]])
 } else {
     stop("command line arguments specified wrongly, check R script")
 }
-
 
 
 ### INPUT FOLDER ###
@@ -51,7 +50,7 @@ plink_geno_path <- "/exports/csce/eddie/biology/groups/pemberton/martin/plink_ge
 #output_path_main_files <- paste0(output_path_chr, "/AI_main_files/")
 
 # on eddie
-output_path_chr <- paste0("/exports/eddie/scratch/v1mstoff/cv_full_1_5_sex_chr/chr_", chr_num) # main folder
+output_path_chr <- paste0("/exports/eddie/scratch/v1mstoff/cv_run_3_hap_2019/chr_", chr_num) # main folder
 output_path_main_files <-  paste0(output_path_chr, "/AI_main_files/") # main files for chr1
 
 if (!dir.exists(output_path_chr)) dir.create(output_path_chr, recursive = TRUE)
@@ -66,13 +65,8 @@ sheep_bim <- paste0(plink_geno_path, sheep_plink_name, ".bim")
 sheep_fam <- paste0(plink_geno_path, sheep_plink_name, ".fam")
 full_sample <- read.plink(sheep_bed, sheep_bim, sheep_fam)
 
-# pseudoautosomal region SNPs
-par_snps <- readLines("/exports/csce/eddie/biology/groups/pemberton/martin/plink_genotypes/Oar3.1_PAR_SNPs_HD.txt")
-
 # filter names of snps on one chromosome
-all_chr_snps <- full_sample$map %>%  filter(chromosome == chr_num) %>%
-                    dplyr::filter(!(snp.name %in% par_snps))  %>% 
-                    .$snp.name
+all_chr_snps <- full_sample$map %>% filter(chromosome == chr_num) %>% .$snp.name
 
 # filter those snps from full dataset and coerce from raw to numeric
 sheep_geno <- as(full_sample$genotypes[, all_chr_snps], Class = "numeric")
@@ -106,8 +100,11 @@ repl_na <- function(DT) {
 repl_na(sheep_geno_merged)
 
 # filter individuals which are not in pedigree due to some ID error
-not_in_ped <- as.character(c(7658, 7628, 7217, 5371, -112, -6, 1791, 5986, 7717))
+#not_in_ped <- as.character(c(39,4302,9240,10446,10448,10449,10450,
+#                             10451,11076,11077,11079,11388))
 
+not_in_ped <- as.character(c(7658, 7628, 7217, 5371, -112, -6, 1791, 5986, 7717))
+                             
 sheep_geno_filt <- sheep_geno_merged[!(ID %chin% not_in_ped)]
 
 # write to file with col names for masking script

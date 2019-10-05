@@ -59,7 +59,7 @@ if (!dir.exists(output_path_main_files)) dir.create(output_path_main_files)
 #####################
 
 # plink name
-sheep_plink_name <- "merged_sheep_geno_ram"
+sheep_plink_name <- "merged_sheep_geno"
 # read merged plink data
 sheep_bed <- paste0(plink_geno_path, sheep_plink_name, ".bed")
 sheep_bim <- paste0(plink_geno_path, sheep_plink_name, ".bim")
@@ -76,13 +76,43 @@ all_chr_snps <- full_sample$map %>%  filter(chromosome == chr_num) %>%
 
 # filter those snps from full dataset and coerce from raw to numeric
 sheep_geno <- as(full_sample$genotypes[, all_chr_snps], Class = "numeric")
-sheep_ids <- rownames(sheep_geno)
+
+# plink puts double ids when merging, extract unique ids here
+sheep_ids <- unlist(lapply(str_split(rownames(full_sample$genotypes), "\\.", 2), function(x) x[[2]]))
+rownames(sheep_geno) <- sheep_ids
 
 # clear some space
 rm(full_sample)
 
+
 # make tibble and put rownames as ID column
-sheep_geno_merged <- as_tibble(sheep_geno, rownames = "ID")
+sheep_geno <- as_tibble(sheep_geno, rownames = "ID")
+
+###### merge individuals on both ld and hd chip #####
+#dup_ids <-  which(duplicated(sheep_ids))
+setDT(sheep_geno)
+
+# function to merge SNP data from the same individual, when it is both 
+# in the HD and LD chip
+# if genotypoe is missing on one chip, take the existing genotype
+# if genotypes differ between chips, set NA
+
+merge_geno <- function(vec) {
+   # vec <- as.numeric(vec)
+    if (length(vec) == 1) return(as.numeric(vec))
+    if (sum(is.na(vec)) == 2) return(as.numeric(NA))
+    if (sum(is.na(vec)) == 1) return(vec[!is.na(vec)])
+    if (sum(is.na(vec)) == 0) {
+        if (vec[1] == vec[2]){
+            return(vec[1]) 
+        } else {
+            print(vec)
+            return(as.numeric(NA))
+        }
+    }
+}
+
+sheep_geno_merged <- sheep_geno[, lapply(.SD, merge_geno), by=ID]
 
 ##### create spec file / has to source create_spec_file_AI.R
 # this is specific to every chromosome
@@ -106,7 +136,8 @@ repl_na <- function(DT) {
 repl_na(sheep_geno_merged)
 
 # filter individuals which are not in pedigree due to some ID error
-not_in_ped <- as.character(c(7658, 7628, 7217, 5371, -112, -6, 1791, 5986, 7717))
+not_in_ped <- as.character(c(39,4302,9240,10446,10448,10449,10450,
+                             10451,11076,11077,11079,11388))
 
 sheep_geno_filt <- sheep_geno_merged[!(ID %chin% not_in_ped)]
 

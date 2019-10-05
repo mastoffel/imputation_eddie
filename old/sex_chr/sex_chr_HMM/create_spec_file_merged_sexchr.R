@@ -4,12 +4,12 @@ create_spec_file <- function(output_path, num_SNPs) {
     
     # specify first 5 haplotype lengths as between 10 and 30 percent of chromosome
     # specify second 5 haplotype lengths in between the first five with some +- (recommended by John)
-    first_five <- round(seq(from = 0.05, to = 0.30, by = 0.06) * num_SNPs, digits = 0)
+    first_five <- round(seq(from = 0.01, to = 0.05, by = 0.01) * num_SNPs, digits = 0)
     second_five <- round(first_five + (first_five[2] - first_five[1])/2 + runif(5, -0.05*first_five[1], 0.05*first_five[1]), 0)
     
     # specify core and tail around a 100 longer than core, as recommended by Andrew
     core_lengths <- paste(c(first_five, second_five), collapse = ",")
-    core_tail_lengths <- paste(c(first_five, second_five) + 100, collapse = ",")
+    core_tail_lengths <- paste(c(first_five, second_five) + 50, collapse = ",")
     
     writeLines(
         con = paste0(output_path, "AlphaImputeSpec.txt"),
@@ -39,7 +39,7 @@ create_spec_file <- function(output_path, num_SNPs) {
             "ModelRecomb                         ,No",
             "= BOX 7: Hidden Markov Model ========================================================",
             "HMMOption                           ,Only",
-            "TemplateHaplotypes                  ,50",    # if insufficient accuracy increase to 50 or 100 but much slower
+            "TemplateHaplotypes                  ,100",    # if insufficient accuracy increase to 50 or 100 but much slower
             "BurnInRounds                        ,5",
             "Rounds                              ,20",
             #"Seed                                ,-123456789",

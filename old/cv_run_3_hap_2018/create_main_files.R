@@ -9,7 +9,7 @@
 library(snpStats)
 library(tidyverse)
 library(data.table)
-source("create_spec_file_merged_sexchr.R")
+source("create_spec_file_merged.R")
 #library(gdata)
 #library("WGCNA")
 # browseVignettes("snpStats")
@@ -25,7 +25,7 @@ if (purrr::is_empty(args)) {
 } else if (args[[1]] == "all_chr") { # command for full dataset
     stop("Only accepts chromosome numbers from 1-26 at the moment")
     chr_num <- NULL
-} else if ((as.numeric(args[[1]]) < 28) & (as.numeric(args[[1]]) >= 1)) { # do not allow the sex chromosome for now
+} else if ((as.numeric(args[[1]]) < 27) & (as.numeric(args[[1]]) >= 1)) { # do not allow the sex chromosome for now
     chr_num <- as.numeric(args[[1]])
 } else {
     stop("command line arguments specified wrongly, check R script")
@@ -51,7 +51,7 @@ plink_geno_path <- "/exports/csce/eddie/biology/groups/pemberton/martin/plink_ge
 #output_path_main_files <- paste0(output_path_chr, "/AI_main_files/")
 
 # on eddie
-output_path_chr <- paste0("/exports/eddie/scratch/v1mstoff/cv_full_1_5_sex_chr/chr_", chr_num) # main folder
+output_path_chr <- paste0("/exports/eddie/scratch/v1mstoff/cv_run_3_hap_2018/chr_", chr_num) # main folder
 output_path_main_files <-  paste0(output_path_chr, "/AI_main_files/") # main files for chr1
 
 if (!dir.exists(output_path_chr)) dir.create(output_path_chr, recursive = TRUE)
@@ -59,30 +59,55 @@ if (!dir.exists(output_path_main_files)) dir.create(output_path_main_files)
 #####################
 
 # plink name
-sheep_plink_name <- "merged_sheep_geno_ram"
+sheep_plink_name <- "merged_sheep_geno"
 # read merged plink data
 sheep_bed <- paste0(plink_geno_path, sheep_plink_name, ".bed")
 sheep_bim <- paste0(plink_geno_path, sheep_plink_name, ".bim")
 sheep_fam <- paste0(plink_geno_path, sheep_plink_name, ".fam")
 full_sample <- read.plink(sheep_bed, sheep_bim, sheep_fam)
 
-# pseudoautosomal region SNPs
-par_snps <- readLines("/exports/csce/eddie/biology/groups/pemberton/martin/plink_genotypes/Oar3.1_PAR_SNPs_HD.txt")
-
 # filter names of snps on one chromosome
-all_chr_snps <- full_sample$map %>%  filter(chromosome == chr_num) %>%
-                    dplyr::filter(!(snp.name %in% par_snps))  %>% 
-                    .$snp.name
+all_chr_snps <- full_sample$map %>% filter(chromosome == chr_num) %>% .$snp.name
 
 # filter those snps from full dataset and coerce from raw to numeric
 sheep_geno <- as(full_sample$genotypes[, all_chr_snps], Class = "numeric")
-sheep_ids <- rownames(sheep_geno)
+
+# plink puts double ids when merging, extract unique ids here
+sheep_ids <- unlist(lapply(str_split(rownames(full_sample$genotypes), "\\.", 2), function(x) x[[2]]))
+rownames(sheep_geno) <- sheep_ids
 
 # clear some space
 rm(full_sample)
 
+
 # make tibble and put rownames as ID column
-sheep_geno_merged <- as_tibble(sheep_geno, rownames = "ID")
+sheep_geno <- as_tibble(sheep_geno, rownames = "ID")
+
+###### merge individuals on both ld and hd chip #####
+#dup_ids <-  which(duplicated(sheep_ids))
+setDT(sheep_geno)
+
+# function to merge SNP data from the same individual, when it is both 
+# in the HD and LD chip
+# if genotypoe is missing on one chip, take the existing genotype
+# if genotypes differ between chips, set NA
+
+merge_geno <- function(vec) {
+   # vec <- as.numeric(vec)
+    if (length(vec) == 1) return(as.numeric(vec))
+    if (sum(is.na(vec)) == 2) return(as.numeric(NA))
+    if (sum(is.na(vec)) == 1) return(vec[!is.na(vec)])
+    if (sum(is.na(vec)) == 0) {
+        if (vec[1] == vec[2]){
+            return(vec[1]) 
+        } else {
+            print(vec)
+            return(as.numeric(NA))
+        }
+    }
+}
+
+sheep_geno_merged <- sheep_geno[, lapply(.SD, merge_geno), by=ID]
 
 ##### create spec file / has to source create_spec_file_AI.R
 # this is specific to every chromosome
@@ -106,6 +131,9 @@ repl_na <- function(DT) {
 repl_na(sheep_geno_merged)
 
 # filter individuals which are not in pedigree due to some ID error
+#not_in_ped <- as.character(c(39,4302,9240,10446,10448,10449,10450,
+#                             10451,11076,11077,11079,11388))
+
 not_in_ped <- as.character(c(7658, 7628, 7217, 5371, -112, -6, 1791, 5986, 7717))
 
 sheep_geno_filt <- sheep_geno_merged[!(ID %chin% not_in_ped)]
