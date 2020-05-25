@@ -51,7 +51,7 @@ plink_geno_path <- "/exports/csce/eddie/biology/groups/pemberton/martin/plink_ge
 #output_path_main_files <- paste0(output_path_chr, "/AI_main_files/")
 
 # on eddie
-output_path_chr <- paste0("/exports/eddie/scratch/v1mstoff/cv_full_1_5_sex_chr/chr_", chr_num) # main folder
+output_path_chr <- paste0("/exports/eddie/scratch/v1mstoff/full_1_5_sex_chr/chr_", chr_num) # main folder
 output_path_main_files <-  paste0(output_path_chr, "/AI_main_files/") # main files for chr1
 
 if (!dir.exists(output_path_chr)) dir.create(output_path_chr, recursive = TRUE)
@@ -112,7 +112,7 @@ sheep_geno_filt <- sheep_geno_merged[!(ID %chin% not_in_ped)]
 
 # write to file with col names for masking script
 fwrite(sheep_geno_filt, paste0(output_path_main_files, "Genotypes.txt"), 
-       sep = " ", col.names = TRUE)
+       sep = " ", col.names = FALSE)
 
 
 

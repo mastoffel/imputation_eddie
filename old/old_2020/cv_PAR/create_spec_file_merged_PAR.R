@@ -19,7 +19,7 @@ create_spec_file <- function(output_path, num_SNPs) {
             "GenotypeFile                        ,Genotypes.txt",
             #"TrueGenotypeFile                    ,TrueGenotypes.txt"
             "= BOX 2: Sex Chromosome =============================================================",
-            "SexChrom                            ,Yes, sex_chr_impute_table.txt, Male", # Yes, add_file, Male 
+            "SexChrom                            ,No", # Yes, add_file, Male 
             "= BOX 3: SNPs =======================================================================",
             paste0("NumberSnp                     ,",num_SNPs),
             "= BOX 4: Filtering ==================================================================",
@@ -39,9 +39,9 @@ create_spec_file <- function(output_path, num_SNPs) {
             "ModelRecomb                         ,No",
             "= BOX 7: Hidden Markov Model ========================================================",
             "HMMOption                           ,No",
-            "TemplateHaplotypes                  ,20",    # if insufficient accuracy increase to 50 or 100 but much slower
+            "TemplateHaplotypes                  ,50",    # if insufficient accuracy increase to 50 or 100 but much slower
             "BurnInRounds                        ,5",
-            "Rounds                              ,20",
+            "Rounds                              ,50",
             #"Seed                                ,-123456789",
             #"ThresholdImputed                    ,90.0",
             "= BOX 8: Running options ============================================================",
